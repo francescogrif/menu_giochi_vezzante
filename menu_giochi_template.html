@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Il mio Menu Giochi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f8f8;
+    }
+    header {
+      background-color: #333;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
+    .filter {
+      text-align: center;
+      margin: 1em;
+    }
+    .games {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1em;
+      padding: 1em;
+    }
+    .game-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 280px;
+      overflow: hidden;
+    }
+    .game-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .game-info {
+      padding: 1em;
+    }
+    .game-info h3 {
+      margin: 0 0 0.5em;
+    }
+    .game-info p {
+      margin: 0.3em 0;
+    }
+    .game-info a {
+      display: inline-block;
+      margin-top: 0.5em;
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>I Giochi di Francesco</h1>
+  </header>
+  <div class="filter">
+    <label for="categoria">Filtra per categoria:</label>
+    <select id="categoria" onchange="filtraGiochi()">
+      <option value="">Tutte</option>
+    </select>
+  </div>
+  <div class="games" id="contenitore-giochi"></div>
+
+  <script>
+    let giochi = [];
+    let categorie = new Set();
+
+    fetch("catalogo_giochi.json")
+      .then(res => res.json())
+      .then(data => {
+        giochi = data;
+        data.forEach(g => categorie.add(g.categoria));
+        popolaCategorie();
+        mostraGiochi();
+      });
+
+    function popolaCategorie() {
+      const select = document.getElementById("categoria");
+      categorie.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    }
+
+    function mostraGiochi(filtro = "") {
+      const container = document.getElementById("contenitore-giochi");
+      container.innerHTML = "";
+      giochi.filter(g => !filtro || g.categoria === filtro).forEach(gioco => {
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.innerHTML = `
+          <img src="${gioco.immagine}" alt="${gioco.nome}" />
+          <div class="game-info">
+            <h3>${gioco.nome}</h3>
+            <p><strong>Giocatori:</strong> ${gioco.giocatori}</p>
+            <p><strong>Durata:</strong> ${gioco.durata}</p>
+            <p>${gioco.descrizione}</p>
+            <a href="${gioco.link_regolamento}" target="_blank">Regolamento</a> |
+            <a href="${gioco.link_bgg}" target="_blank">BoardGameGeek</a>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filtraGiochi() {
+      const valore = document.getElementById("categoria").value;
+      mostraGiochi(valore);
+    }
+  </script>
+</body>
+</html>
